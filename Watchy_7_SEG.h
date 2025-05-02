@@ -11,12 +11,13 @@
 class Watchy7SEG : public Watchy{
     using Watchy::Watchy;
     public:
-        void drawWatchFace();
+        void drawWatchFace(bool darkMode);
         void drawTime();
         void drawDate();
-        void drawSteps();
-        void drawWeather();
-        void drawBattery();
+        void drawSteps(bool darkMode);
+        void drawWeather(bool darkMode);
+        void drawBattery(bool darkMode);
+        virtual void handleButtonPress();
 };
 
 #endif

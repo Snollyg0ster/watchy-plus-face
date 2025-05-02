@@ -1,6 +1,6 @@
 #include "Watchy_7_SEG.h"
 
-#define DARKMODE true
+bool DARKMODE = true;
 
 const uint8_t BATTERY_SEGMENTS_WIDTH = 27;
 const uint8_t BATTERY_SEGMENT_WIDTH = 2;
@@ -11,21 +11,32 @@ const uint8_t WEATHER_ICON_HEIGHT = 32;
 const float APPROXIMATE_MAXIMUM_VOLTAGE = 4.245;
 const float APPROXIMATE_MINIMUM_VOLTAGE = 2.8;
 
-void Watchy7SEG::drawWatchFace(DARKMODE boolean){
-    display.fillScreen(DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);
-    display.setTextColor(DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+void Watchy7SEG::handleButtonPress() {
+  Watchy::handleButtonPress();
+
+  uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
+
+  if ((wakeupBit & BACK_BTN_MASK) && guiState == WATCHFACE_STATE) {
+    DARKMODE = !DARKMODE;
+    drawWatchFace(DARKMODE);
+  }
+}
+
+void Watchy7SEG::drawWatchFace(bool darkMode){
+    display.fillScreen(darkMode ? GxEPD_BLACK : GxEPD_WHITE);
+    display.setTextColor(darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     drawTime();
     drawDate();
-    drawSteps();
-    drawWeather();
-    drawBattery();
-    display.drawBitmap(116, 75, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    drawSteps(darkMode);
+    drawWeather(darkMode);
+    drawBattery(darkMode);
+    display.drawBitmap(116, 75, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     if(BLE_CONFIGURED){
-        display.drawBitmap(100, 73, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+        display.drawBitmap(100, 73, bluetooth, 13, 21, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     }
     #ifdef ARDUINO_ESP32S3_DEV
     if(USB_PLUGGED_IN){
-      display.drawBitmap(140, 75, charge, 16, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+      display.drawBitmap(140, 75, charge, 16, 18, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     }
     #endif
 }
@@ -78,19 +89,19 @@ void Watchy7SEG::drawDate(){
     display.setCursor(5, 150);
     display.println(tmYearToCalendar(currentTime.Year));// offset from 1970, since year is stored in uint8_t
 }
-void Watchy7SEG::drawSteps(){
+void Watchy7SEG::drawSteps(bool darkMode){
     // reset step counter at midnight
     if (currentTime.Hour == 0 && currentTime.Minute == 0){
       sensor.resetStepCounter();
     }
     uint32_t stepCount = sensor.getCounter();
-    display.drawBitmap(10, 165, steps, 19, 23, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    display.drawBitmap(10, 165, steps, 19, 23, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     display.setCursor(35, 190);
     display.println(stepCount);
 }
-void Watchy7SEG::drawBattery(){
-    display.drawBitmap(158, 73, battery, 37, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-    display.fillRect(163, 78, BATTERY_SEGMENTS_WIDTH, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);//clear battery segments
+void Watchy7SEG::drawBattery(bool darkMode){
+    display.drawBitmap(158, 73, battery, 37, 21, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
+    display.fillRect(163, 78, BATTERY_SEGMENTS_WIDTH, BATTERY_SEGMENT_HEIGHT, darkMode ? GxEPD_BLACK : GxEPD_WHITE);//clear battery segments
     float VBAT = getBatteryVoltage();
     float maxVoltageDelta = APPROXIMATE_MAXIMUM_VOLTAGE - APPROXIMATE_MINIMUM_VOLTAGE;
     float voltageDelta = maxVoltageDelta - (APPROXIMATE_MAXIMUM_VOLTAGE - VBAT);
@@ -104,11 +115,11 @@ void Watchy7SEG::drawBattery(){
     int8_t segmentsAmount = batteryPercent * maxSegmentsAmount;
 
     for(int8_t batterySegment = 0; batterySegment < segmentsAmount; batterySegment++){
-        display.fillRect(163 + (batterySegment * BATTERY_SEGMENT_SPACING), 78, BATTERY_SEGMENT_WIDTH, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+        display.fillRect(163 + (batterySegment * BATTERY_SEGMENT_SPACING), 78, BATTERY_SEGMENT_WIDTH, BATTERY_SEGMENT_HEIGHT, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     }
 }
 
-void Watchy7SEG::drawWeather(){
+void Watchy7SEG::drawWeather(bool darkMode){
 
     weatherData currentWeather = getWeatherData();
 
@@ -127,7 +138,7 @@ void Watchy7SEG::drawWeather(){
         display.setCursor(159 - w - x1, 136);
     }
     display.println(temperature);
-    display.drawBitmap(165, 110, currentWeather.isMetric ? celsius : fahrenheit, 26, 20, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    display.drawBitmap(165, 110, currentWeather.isMetric ? celsius : fahrenheit, 26, 20, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     const unsigned char* weatherIcon;
 
     if(WIFI_CONFIGURED){
@@ -154,5 +165,5 @@ void Watchy7SEG::drawWeather(){
       weatherIcon = chip;
     }
     
-    display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
 }
