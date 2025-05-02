@@ -1,6 +1,6 @@
 #include "Watchy_7_SEG.h"
 
-bool DARKMODE = true;
+RTC_DATA_ATTR bool DARKMODE = true;
 
 const uint8_t BATTERY_SEGMENTS_WIDTH = 27;
 const uint8_t BATTERY_SEGMENT_WIDTH = 2;
@@ -13,16 +13,19 @@ const float APPROXIMATE_MINIMUM_VOLTAGE = 2.8;
 
 void Watchy7SEG::handleButtonPress() {
   Watchy::handleButtonPress();
-
   uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
 
-  if ((wakeupBit & BACK_BTN_MASK) && guiState == WATCHFACE_STATE) {
-    DARKMODE = !DARKMODE;
-    drawWatchFace(DARKMODE);
+  if ((wakeupBit & BACK_BTN_MASK) ) {
+    if (guiState == WATCHFACE_STATE) {
+      DARKMODE = !DARKMODE;
+      RTC.read(currentTime);
+      Watchy::showWatchFace(false);
+    }
   }
 }
 
-void Watchy7SEG::drawWatchFace(bool darkMode){
+void Watchy7SEG::drawWatchFace(){
+    bool darkMode = DARKMODE;
     display.fillScreen(darkMode ? GxEPD_BLACK : GxEPD_WHITE);
     display.setTextColor(darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     drawTime();
