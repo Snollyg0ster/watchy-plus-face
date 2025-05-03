@@ -18,7 +18,7 @@ class Watchy7SEG : public Watchy{
         void drawSteps(bool darkMode);
         void drawWeather(bool darkMode);
         void drawBattery(bool darkMode);
-        weatherData getYandexWeather();
+        weatherData getYandexWeather(String url, String apiKey, String lat, String lon);
         weatherData getOpenWeather(String cityID, String lat, String lon, String units, String lang,
           String url, String apiKey,
           uint8_t updateInterval);

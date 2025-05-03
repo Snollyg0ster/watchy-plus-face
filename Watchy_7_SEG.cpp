@@ -2,9 +2,9 @@
 
 RTC_DATA_ATTR bool darkMode = true;
 RTC_DATA_ATTR weatherData weather;
+RTC_DATA_ATTR WeatherProvider shownWeatherProvider;
 RTC_DATA_ATTR tmElements_t lastWeatherCheck;
 RTC_DATA_ATTR bool wasWeatherChecked = false;
-RTC_DATA_ATTR uint8_t testTemperature = 0;
 
 const uint8_t BATTERY_SEGMENTS_WIDTH = 27;
 const uint8_t BATTERY_SEGMENT_WIDTH = 2;
@@ -153,16 +153,38 @@ weatherData Watchy7SEG::getOpenWeather(String cityID, String lat, String lon, St
     breakTime((time_t)(int)responseObject["sys"]["sunrise"], weather.sunrise);
     breakTime((time_t)(int)responseObject["sys"]["sunset"], weather.sunset);
   } else {
-  // http error
+    throw "error";
   }
   http.end();
   return weather;
 }
 
-weatherData Watchy7SEG::getYandexWeather() {
+weatherData Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, String lon) {
   HTTPClient http;
+  String weatherQueryURL = url;
   
   http.setConnectTimeout(3000);
+
+  if (lat) {
+    weatherQueryURL.replace("{lat}", lat);
+  }
+  if (lon) {
+    weatherQueryURL.replace("{lon}", lon);
+  }
+
+  http.setURL(weatherQueryURL);
+  http.addHeader("X-Yandex-Weather-Key", apiKey);
+  http.begin(weatherQueryURL.c_str());int httpResponseCode = http.GET();
+  if (httpResponseCode == 200) {
+    String payload             = http.getString();
+    JSONVar responseObject     = JSON.parse(payload);
+    weather.temperature = int(responseObject["fact"]["temp"]);
+    weather.weatherConditionCode = int(responseObject["fact"]["condition"]);
+    weather.external = true;
+  } else {
+    throw "error";
+  }
+  http.end();
 
   return weather;
 }
@@ -181,12 +203,25 @@ weatherData Watchy7SEG::getWeather() {
     if (!wasWeatherChecked || elapsedTime >= settings.weatherUpdateInterval) {
       lastWeatherCheck = currentTime;
       wasWeatherChecked = true;
+      weather.isMetric = settings.weatherUnit == String("metric");
+      int providersCount = sizeof(settings.weatherProviders) / sizeof(*settings.weatherProviders);
 
       if (connectWiFi()) {
-        weather.temperature          = testTemperature * 5;
-        weather.weatherConditionCode = 800;
-        weather.external             = false;
-        testTemperature++;
+        for (int i = 0; i < providersCount; i++) {
+          try {
+            switch (settings.weatherProviders[i]) {
+              case WeatherProvider::OpenWeatherMap:
+                getOpenWeather(settings.cityID, settings.lat, settings.lon, settings.weatherUnit, settings.weatherLang, settings.weatherURL, settings.weatherAPIKey, settings.weatherUpdateInterval);
+                shownWeatherProvider = WeatherProvider::OpenWeatherMap;
+                break;
+              case WeatherProvider::Yandex:
+                getYandexWeather(settings.yandexWeather.url, settings.yandexWeather.weatherAPIKey, settings.yandexWeather.lat, settings.yandexWeather.lon);
+                shownWeatherProvider = WeatherProvider::Yandex;
+            }
+          } catch(String e) {
+            continue;
+          }
+        }
 
         // turn off radios
         WiFi.mode(WIFI_OFF);
@@ -254,4 +289,9 @@ void Watchy7SEG::drawWeather(bool darkMode){
     }
     
     display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
+
+
+    display.setFont(&DSEG7_Classic_Regular_39);
+    display.setCursor(185, 158);
+    display.println(shownWeatherProvider == WeatherProvider::Yandex ? "Y" : "O");
 }
