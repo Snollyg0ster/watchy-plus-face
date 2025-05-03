@@ -1,6 +1,10 @@
 #include "Watchy_7_SEG.h"
 
-RTC_DATA_ATTR bool DARKMODE = true;
+RTC_DATA_ATTR bool darkMode = true;
+RTC_DATA_ATTR weatherData weather;
+RTC_DATA_ATTR tmElements_t lastWeatherCheck;
+RTC_DATA_ATTR bool wasWeatherChecked = false;
+RTC_DATA_ATTR uint8_t testTemperature = 0;
 
 const uint8_t BATTERY_SEGMENTS_WIDTH = 27;
 const uint8_t BATTERY_SEGMENT_WIDTH = 2;
@@ -15,17 +19,16 @@ void Watchy7SEG::handleButtonPress() {
   Watchy::handleButtonPress();
   uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
 
-  if ((wakeupBit & BACK_BTN_MASK) ) {
+  if (wakeupBit & BACK_BTN_MASK) {
     if (guiState == WATCHFACE_STATE) {
-      DARKMODE = !DARKMODE;
+      darkMode = !darkMode;
       RTC.read(currentTime);
-      Watchy::showWatchFace(false);
+      showWatchFace(false);
     }
   }
 }
 
-void Watchy7SEG::drawWatchFace(){
-    bool darkMode = DARKMODE;
+void Watchy7SEG::drawWatchFace() {
     display.fillScreen(darkMode ? GxEPD_BLACK : GxEPD_WHITE);
     display.setTextColor(darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     drawTime();
@@ -122,16 +125,87 @@ void Watchy7SEG::drawBattery(bool darkMode){
     }
 }
 
-void Watchy7SEG::getYandexWeatherData() {
-  
+void Watchy7SEG::getOpenWeather(String cityID, String lat, String lon, String units, String lang, String url, String apiKey, uint8_t updateInterval) {
+  HTTPClient http; // Use Weather API for live data if WiFi is connected
+  String weatherQueryURL = url;
+
+  http.setConnectTimeout(3000); // 3 second max timeout
+
+  if(cityID != ""){
+    weatherQueryURL.replace("{cityID}", cityID);
+  }else{
+    weatherQueryURL.replace("{lat}", lat);
+    weatherQueryURL.replace("{lon}", lon);
+  }
+  weatherQueryURL.replace("{units}", units);
+  weatherQueryURL.replace("{lang}", lang);
+  weatherQueryURL.replace("{apiKey}", apiKey);
+  http.begin(weatherQueryURL.c_str());
+  int httpResponseCode = http.GET();
+  if (httpResponseCode == 200) {
+    String payload             = http.getString();
+    JSONVar responseObject     = JSON.parse(payload);
+    weather.temperature = int(responseObject["main"]["temp"]);
+    weather.weatherConditionCode = int(responseObject["weather"][0]["id"]);
+    weather.weatherDescription =
+    JSONVar::stringify(responseObject["weather"][0]["main"]);
+    weather.external = true;
+    breakTime((time_t)(int)responseObject["sys"]["sunrise"], weather.sunrise);
+    breakTime((time_t)(int)responseObject["sys"]["sunset"], weather.sunset);
+  } else {
+  // http error
+  }
+  http.end();
 }
 
+void Watchy7SEG::getYandexWeather() {
+
+}
+
+uint16_t getDayMinutes(tmElements_t &time) {
+  return time.Hour * 60 + time.Minute;
+}
+
+weatherData Watchy7SEG::getWeather() {
+    uint16_t elapsedTime = 0;
+
+    if (wasWeatherChecked) {
+      elapsedTime = getDayMinutes(currentTime) - getDayMinutes(lastWeatherCheck);
+    }
+
+    if (!wasWeatherChecked || elapsedTime >= settings.weatherUpdateInterval) {
+      lastWeatherCheck = currentTime;
+      wasWeatherChecked = true;
+
+      if (connectWiFi()) {
+        weather.temperature          = testTemperature * 5;
+        weather.weatherConditionCode = 800;
+        weather.external             = false;
+        testTemperature++;
+
+        // turn off radios
+        WiFi.mode(WIFI_OFF);
+        btStop();
+      } else { // No WiFi, use internal temperature sensor
+        uint8_t temperature = sensor.readTemperature(); // celsius
+    
+        if (!weather.isMetric) {
+          temperature = temperature * 9. / 5. + 32.; // fahrenheit
+        }
+    
+        weather.temperature          = temperature;
+        weather.weatherConditionCode = 800;
+        weather.external             = false;
+      }
+    }
+}
+
+
 void Watchy7SEG::drawWeather(bool darkMode){
+    weatherData weather = getWeather();
 
-    weatherData currentWeather = getWeatherData();
-
-    int8_t temperature = currentWeather.temperature;
-    int16_t weatherConditionCode = currentWeather.weatherConditionCode;
+    int8_t temperature = weather.temperature;
+    int16_t weatherConditionCode = weather.weatherConditionCode;
 
     display.setFont(&DSEG7_Classic_Regular_39);
     int16_t  x1, y1;
@@ -145,7 +219,7 @@ void Watchy7SEG::drawWeather(bool darkMode){
         display.setCursor(159 - w - x1, 136);
     }
     display.println(temperature);
-    display.drawBitmap(165, 110, currentWeather.isMetric ? celsius : fahrenheit, 26, 20, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
+    display.drawBitmap(165, 110, weather.isMetric ? celsius : fahrenheit, 26, 20, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     const unsigned char* weatherIcon;
 
     if(WIFI_CONFIGURED){

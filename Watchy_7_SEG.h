@@ -18,7 +18,11 @@ class Watchy7SEG : public Watchy{
         void drawSteps(bool darkMode);
         void drawWeather(bool darkMode);
         void drawBattery(bool darkMode);
-        void getYandexWeatherData();
+        void getYandexWeather();
+        void getOpenWeather(String cityID, String lat, String lon, String units, String lang,
+          String url, String apiKey,
+          uint8_t updateInterval);
+        weatherData getWeather();
         virtual void drawWatchFace() override;
         virtual void handleButtonPress() override;
         

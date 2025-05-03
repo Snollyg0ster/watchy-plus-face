@@ -21,7 +21,7 @@
 #define OPENWEATHERMAP_APIKEY "7d949cbe853ef083df5a7a7abd08ea0e" //use your own API key :)
 #define TEMP_UNIT "metric" //metric = Celsius , imperial = Fahrenheit
 #define TEMP_LANG "ru"
-#define WEATHER_UPDATE_INTERVAL 30 //must be greater than 5, measured in minutes
+#define WEATHER_UPDATE_INTERVAL 2 //must be greater than 5, measured in minutes
 //NTP Settings
 #define NTP_SERVER "pool.ntp.org"
 #define GMT_OFFSET_SEC 3600 * 7 //New York is UTC -5 EST, -4 EDT, will be overwritten by weather data
