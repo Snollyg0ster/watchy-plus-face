@@ -164,26 +164,22 @@ weatherData Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, 
   String weatherQueryURL = url;
   
   http.setConnectTimeout(3000);
-
-  if (lat) {
-    weatherQueryURL.replace("{lat}", lat);
-  }
-  if (lon) {
-    weatherQueryURL.replace("{lon}", lon);
-  }
-
-  http.setURL(weatherQueryURL);
+  weatherQueryURL.replace("{lat}", lat);
+  weatherQueryURL.replace("{lon}", lon);
   http.addHeader("X-Yandex-Weather-Key", apiKey);
-  http.begin(weatherQueryURL.c_str());int httpResponseCode = http.GET();
+  http.begin(weatherQueryURL.c_str());
+  int httpResponseCode = http.GET();
+
   if (httpResponseCode == 200) {
     String payload             = http.getString();
     JSONVar responseObject     = JSON.parse(payload);
     weather.temperature = int(responseObject["fact"]["temp"]);
-    weather.weatherConditionCode = int(responseObject["fact"]["condition"]);
+    weather.weatherConditionCode = 800;
     weather.external = true;
   } else {
     throw 1;
   }
+
   http.end();
 
   return weather;
@@ -216,7 +212,9 @@ weatherData Watchy7SEG::getWeather() {
               case WeatherProvider::Yandex:
                 getYandexWeather(settings.yandexWeather.url, settings.yandexWeather.weatherAPIKey, settings.yandexWeather.lat, settings.yandexWeather.lon);
                 shownWeatherProvider = WeatherProvider::Yandex;
+                break;
             }
+            break;
           } catch(int e) {
             continue;
           }
@@ -289,8 +287,7 @@ void Watchy7SEG::drawWeather(bool darkMode){
     
     display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
 
-
-    display.setFont(&DSEG7_Classic_Regular_39);
-    display.setCursor(185, 158);
-    display.println(shownWeatherProvider == WeatherProvider::Yandex ? "Y" : "O");
+    display.setFont(&Seven_Segment10pt7b);
+    display.setCursor(138, 180);
+    display.println(shownWeatherProvider == WeatherProvider::Yandex ? "Yandex" : "OpenWe");
 }
