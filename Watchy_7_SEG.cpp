@@ -153,7 +153,7 @@ weatherData Watchy7SEG::getOpenWeather(String cityID, String lat, String lon, St
     breakTime((time_t)(int)responseObject["sys"]["sunrise"], weather.sunrise);
     breakTime((time_t)(int)responseObject["sys"]["sunset"], weather.sunset);
   } else {
-    throw "error";
+    throw 1;
   }
   http.end();
   return weather;
@@ -182,7 +182,7 @@ weatherData Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, 
     weather.weatherConditionCode = int(responseObject["fact"]["condition"]);
     weather.external = true;
   } else {
-    throw "error";
+    throw 1;
   }
   http.end();
 
@@ -204,10 +204,9 @@ weatherData Watchy7SEG::getWeather() {
       lastWeatherCheck = currentTime;
       wasWeatherChecked = true;
       weather.isMetric = settings.weatherUnit == String("metric");
-      int providersCount = sizeof(settings.weatherProviders) / sizeof(*settings.weatherProviders);
 
       if (connectWiFi()) {
-        for (int i = 0; i < providersCount; i++) {
+        for (int i = 0; i < 2; i++) {
           try {
             switch (settings.weatherProviders[i]) {
               case WeatherProvider::OpenWeatherMap:
@@ -218,7 +217,7 @@ weatherData Watchy7SEG::getWeather() {
                 getYandexWeather(settings.yandexWeather.url, settings.yandexWeather.weatherAPIKey, settings.yandexWeather.lat, settings.yandexWeather.lon);
                 shownWeatherProvider = WeatherProvider::Yandex;
             }
-          } catch(String e) {
+          } catch(int e) {
             continue;
           }
         }
