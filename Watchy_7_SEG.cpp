@@ -125,7 +125,7 @@ void Watchy7SEG::drawBattery(bool darkMode){
     }
 }
 
-void Watchy7SEG::getOpenWeather(String cityID, String lat, String lon, String units, String lang, String url, String apiKey, uint8_t updateInterval) {
+weatherData Watchy7SEG::getOpenWeather(String cityID, String lat, String lon, String units, String lang, String url, String apiKey, uint8_t updateInterval) {
   HTTPClient http; // Use Weather API for live data if WiFi is connected
   String weatherQueryURL = url;
 
@@ -156,10 +156,15 @@ void Watchy7SEG::getOpenWeather(String cityID, String lat, String lon, String un
   // http error
   }
   http.end();
+  return weather;
 }
 
-void Watchy7SEG::getYandexWeather() {
+weatherData Watchy7SEG::getYandexWeather() {
+  HTTPClient http;
+  
+  http.setConnectTimeout(3000);
 
+  return weather;
 }
 
 uint16_t getDayMinutes(tmElements_t &time) {
@@ -198,6 +203,8 @@ weatherData Watchy7SEG::getWeather() {
         weather.external             = false;
       }
     }
+
+    return weather;
 }
 
 

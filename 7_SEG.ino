@@ -4,8 +4,8 @@
 void setup(){
   extendedWatchySettings settings;
   
-  settings.defaultWeatherProvider = WeatherProvider::Yandex;
   settings.yandexWeather = {
+      .url = YANDEX_WEATHER_URL,
       .weatherAPIKey = YANDEX_WEATHER_API_KEY,
       .lat = YANDEX_LAT,
       .lon = YANDEX_LON,

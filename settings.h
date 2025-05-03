@@ -27,22 +27,26 @@
 #define GMT_OFFSET_SEC 3600 * 7 //New York is UTC -5 EST, -4 EDT, will be overwritten by weather data
 
 
-// Yandex Wather settings
+// Yandex Weather settings
 
+#define YANDEX_WEATHER_URL = "https://api.weather.yandex.ru/v2/forecast?lat={lat}&lon={lon}"
 #define YANDEX_WEATHER_API_KEY "16d58385-254a-46b2-80d2-725eddac83ec"
 #define YANDEX_LAT "55.008354" //Novosibirsk, Looked up on https://www.latlong.net/
 #define YANDEX_LON "82.935730"
 
+#define WEATHER_PROVIDERS {WeatherProvider::Yandex, WeatherProvider::OpenWeatherMap}
+
 enum class WeatherProvider {Yandex, OpenWeatherMap};
 
 typedef struct yandexWeatherSettings {
+  String url;
   String weatherAPIKey;
   String lat;
   String lon;
 } OpenWeatherSettings;
 
 typedef struct extendedWatchySettings : watchySettings {
-  WeatherProvider defaultWeatherProvider;
+  WeatherProvider weatherProviders[2] = WEATHER_PROVIDERS;
   yandexWeatherSettings yandexWeather;
 } extendedWatchySettings;
 
