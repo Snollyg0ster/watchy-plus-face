@@ -1,5 +1,9 @@
+#include "Watchy_7_SEG.h"
+
 #ifndef SETTINGS_H
 #define SETTINGS_H
+
+// Open Weather Map settings
 
 //Weather Settings
 #define CITY_ID "1496747" //New York City https://openweathermap.org/current#cityid
@@ -22,22 +26,24 @@
 #define NTP_SERVER "pool.ntp.org"
 #define GMT_OFFSET_SEC 3600 * 7 //New York is UTC -5 EST, -4 EDT, will be overwritten by weather data
 
-watchySettings settings{
-    #ifdef CITY_ID
-        .cityID = CITY_ID,
-    #else
-        .cityID = "",
-        .lat = LAT,
-        .lon = LON,
-    #endif
-    .weatherAPIKey = OPENWEATHERMAP_APIKEY,
-    .weatherURL = OPENWEATHERMAP_URL,
-    .weatherUnit = TEMP_UNIT,
-    .weatherLang = TEMP_LANG,
-    .weatherUpdateInterval = WEATHER_UPDATE_INTERVAL,
-    .ntpServer = NTP_SERVER,
-    .gmtOffset = GMT_OFFSET_SEC,
-    .vibrateOClock = true,
-};
+
+// Yandex Wather settings
+
+#define YANDEX_WEATHER_API_KEY "16d58385-254a-46b2-80d2-725eddac83ec"
+#define YANDEX_LAT "55.008354" //Novosibirsk, Looked up on https://www.latlong.net/
+#define YANDEX_LON "82.935730"
+
+enum class WeatherProvider {Yandex, OpenWeatherMap};
+
+typedef struct yandexWeatherSettings {
+  String weatherAPIKey;
+  String lat;
+  String lon;
+} OpenWeatherSettings;
+
+typedef struct extendedWatchySettings : watchySettings {
+  WeatherProvider defaultWeatherProvider;
+  yandexWeatherSettings yandexWeather;
+} extendedWatchySettings;
 
 #endif

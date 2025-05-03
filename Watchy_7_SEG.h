@@ -7,17 +7,22 @@
 #include "DSEG7_Classic_Bold_25.h"
 #include "DSEG7_Classic_Regular_39.h"
 #include "icons.h"
+#include "settings.h"
 
 class Watchy7SEG : public Watchy{
-    using Watchy::Watchy;
     public:
+        extendedWatchySettings settings;
+
         void drawTime();
         void drawDate();
         void drawSteps(bool darkMode);
         void drawWeather(bool darkMode);
         void drawBattery(bool darkMode);
+        void getYandexWeatherData();
         virtual void drawWatchFace() override;
         virtual void handleButtonPress() override;
+        
+        Watchy7SEG(extendedWatchySettings &s): settings(s), Watchy(s) {}
 };
 
 #endif

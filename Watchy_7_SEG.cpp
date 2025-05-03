@@ -122,6 +122,10 @@ void Watchy7SEG::drawBattery(bool darkMode){
     }
 }
 
+void Watchy7SEG::getYandexWeatherData() {
+  
+}
+
 void Watchy7SEG::drawWeather(bool darkMode){
 
     weatherData currentWeather = getWeatherData();
