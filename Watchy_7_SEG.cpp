@@ -175,23 +175,26 @@ weatherInfo Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, 
     JSONVar responseObject     = JSON.parse(payload);
     weather.temperature = int(responseObject["fact"]["temp"]);
     weather.external = true;
+    weather.weatherConditionCode = 800;
     String condition = responseObject["fact"]["condition"];
 
     if(condition == "cloudy" || condition == "overcast"){//Cloudy
       weather.weatherConditionCode = 802;
-    }else if(condition == "partly-cloudy"){//Few Clouds
+    } else if(condition == "partly-cloudy"){//Few Clouds
       weather.weatherConditionCode = 801;
-    }else if(condition == "clear"){//Clear
+    } else if(condition == "clear"){//Clear
       weather.weatherConditionCode = 800;
-    }else if(condition == "dont-know"){ //!TODO Atmosphere 
+    } else if(condition == "dont-know"){ //!TODO Atmosphere 
       weather.weatherConditionCode = 700;
-    }else if(condition == "light-snow" || condition == "snow" || condition == "snow-showers" || condition == "wet-snow"){//Snow
+    } else if(condition == "light-snow" || condition == "snow" || condition == "snow-showers" || condition == "wet-snow"){//Snow
       weather.weatherConditionCode = 600;
-    }else if(condition == "rain " || condition == "heavy-rain" || condition == "showers"){//Rain
+    } else if(condition == "rain " || condition == "heavy-rain" || condition == "showers"){//Rain
       weather.weatherConditionCode = 500;
-    }else if(condition == "light-rain"){//Drizzle
+    } else if(condition == "hail"){ //!TODO hail 
+      weather.weatherConditionCode = 500;
+    } else if(condition == "light-rain"){//Drizzle
       weather.weatherConditionCode = 300;
-    }else if(condition == "thunderstorm" || condition == "thunderstorm-with-rain" || condition == "thunderstorm-with-hail"){//Thunderstorm
+    } else if(condition == "thunderstorm" || condition == "thunderstorm-with-rain" || condition == "thunderstorm-with-hail"){//Thunderstorm
       weather.weatherConditionCode = 200;
     }
   } else {
