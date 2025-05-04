@@ -167,8 +167,8 @@ weatherData Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, 
   http.setConnectTimeout(3000);
   weatherQueryURL.replace("{lat}", lat);
   weatherQueryURL.replace("{lon}", lon);
-  http.addHeader("X-Yandex-Weather-Key", apiKey);
   http.begin(weatherQueryURL.c_str());
+  http.addHeader("X-Yandex-Weather-Key", apiKey);
   int httpResponseCode = http.GET();
 
   if (httpResponseCode == 200) {
@@ -178,11 +178,7 @@ weatherData Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, 
     weather.weatherConditionCode = 800;
     weather.external = true;
   } else {
-    weather.temperature          = 20;
-    weather.weatherConditionCode = 800;
-    weather.external             = false;
-
-    debugError = String(httpResponseCode) + http.getString();
+    throw 1;
   }
 
   http.end();
@@ -309,6 +305,6 @@ void Watchy7SEG::drawDebugError(bool darkMode) {
   display.setFont(&Seven_Segment10pt7b);
   display.setCursor(x1, y1);
   display.getTextBounds(String(debugError), x1, y1, &x, &y, &w, &h);
-  display.fillRect(x1, y1 - h, w, h, darkMode ? GxEPD_BLACK : GxEPD_WHITE);
+  display.fillRect(x1, y1 - h + 100, w + 100 , h, darkMode ? GxEPD_BLACK : GxEPD_WHITE);
   display.println(debugError);
 }
