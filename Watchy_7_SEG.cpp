@@ -188,7 +188,7 @@ weatherInfo Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, 
       weather.weatherConditionCode = 700;
     } else if(condition == "light-snow" || condition == "snow" || condition == "snow-showers" || condition == "wet-snow"){//Snow
       weather.weatherConditionCode = 600;
-    } else if(condition == "rain " || condition == "heavy-rain" || condition == "showers"){//Rain
+    } else if(condition == "rain" || condition == "heavy-rain" || condition == "showers"){//Rain
       weather.weatherConditionCode = 500;
     } else if(condition == "hail"){ //!TODO hail 
       weather.weatherConditionCode = 500;
