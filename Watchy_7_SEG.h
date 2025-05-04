@@ -9,6 +9,17 @@
 #include "icons.h"
 #include "settings.h"
 
+typedef struct weatherInfo {
+  int8_t temperature;
+  int16_t weatherConditionCode;
+  bool isMetric;
+  String weatherDescription;
+  bool external;
+  tmElements_t sunrise;
+  tmElements_t sunset;
+  WeatherProvider provider;
+} weatherInfo;
+
 class Watchy7SEG : public Watchy{
     public:
         extendedWatchySettings settings;
@@ -19,11 +30,9 @@ class Watchy7SEG : public Watchy{
         void drawWeather(bool darkMode);
         void drawBattery(bool darkMode);
         void drawDebugError(bool darkMode);
-        weatherData getYandexWeather(String url, String apiKey, String lat, String lon);
-        weatherData getOpenWeather(String cityID, String lat, String lon, String units, String lang,
-          String url, String apiKey,
-          uint8_t updateInterval);
-        weatherData getWeather();
+        weatherInfo getYandexWeather(String url, String apiKey, String lat, String lon);
+        weatherInfo getOpenWeather(String cityID, String lat, String lon, String units, String lang, String url, String apiKey, uint8_t updateInterval);
+        weatherInfo getWeather();
         virtual void drawWatchFace() override;
         virtual void handleButtonPress() override;
         

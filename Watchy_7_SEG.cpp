@@ -1,8 +1,7 @@
 #include "Watchy_7_SEG.h"
 
 RTC_DATA_ATTR bool darkMode = true;
-RTC_DATA_ATTR weatherData weather;
-RTC_DATA_ATTR WeatherProvider shownWeatherProvider;
+RTC_DATA_ATTR weatherInfo weather;
 RTC_DATA_ATTR tmElements_t lastWeatherCheck;
 RTC_DATA_ATTR bool wasWeatherChecked = false;
 RTC_DATA_ATTR String debugError;
@@ -127,7 +126,7 @@ void Watchy7SEG::drawBattery(bool darkMode){
     }
 }
 
-weatherData Watchy7SEG::getOpenWeather(String cityID, String lat, String lon, String units, String lang, String url, String apiKey, uint8_t updateInterval) {
+weatherInfo Watchy7SEG::getOpenWeather(String cityID, String lat, String lon, String units, String lang, String url, String apiKey, uint8_t updateInterval) {
   HTTPClient http; // Use Weather API for live data if WiFi is connected
   String weatherQueryURL = url;
 
@@ -160,7 +159,7 @@ weatherData Watchy7SEG::getOpenWeather(String cityID, String lat, String lon, St
   return weather;
 }
 
-weatherData Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, String lon) {
+weatherInfo Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, String lon) {
   HTTPClient http;
   String weatherQueryURL = url;
   
@@ -176,7 +175,7 @@ weatherData Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, 
     JSONVar responseObject     = JSON.parse(payload);
     weather.temperature = int(responseObject["fact"]["temp"]);
     weather.external = true;
-    String condition = JSONVar::stringify(responseObject["fact"]["condition"]);
+    String condition = responseObject["fact"]["condition"];
 
     if(condition == "cloudy" || condition == "overcast"){//Cloudy
       weather.weatherConditionCode = 802;
@@ -208,7 +207,7 @@ uint16_t getDayMinutes(tmElements_t &time) {
   return time.Hour * 60 + time.Minute;
 }
 
-weatherData Watchy7SEG::getWeather() {
+weatherInfo Watchy7SEG::getWeather() {
     uint16_t elapsedTime = 0;
 
     if (wasWeatherChecked) {
@@ -226,11 +225,11 @@ weatherData Watchy7SEG::getWeather() {
             switch (settings.weatherProviders[i]) {
               case WeatherProvider::OpenWeatherMap:
                 getOpenWeather(settings.cityID, settings.lat, settings.lon, settings.weatherUnit, settings.weatherLang, settings.weatherURL, settings.weatherAPIKey, settings.weatherUpdateInterval);
-                shownWeatherProvider = WeatherProvider::OpenWeatherMap;
+                weather.provider = WeatherProvider::OpenWeatherMap;
                 break;
               case WeatherProvider::Yandex:
                 getYandexWeather(settings.yandexWeather.url, settings.yandexWeather.weatherAPIKey, settings.yandexWeather.lat, settings.yandexWeather.lon);
-                shownWeatherProvider = WeatherProvider::Yandex;
+                weather.provider = WeatherProvider::Yandex;
                 break;
             }
             break;
@@ -260,7 +259,7 @@ weatherData Watchy7SEG::getWeather() {
 
 
 void Watchy7SEG::drawWeather(bool darkMode){
-    weatherData weather = getWeather();
+    weatherInfo weather = getWeather();
 
     int8_t temperature = weather.temperature;
     int16_t weatherConditionCode = weather.weatherConditionCode;
@@ -306,9 +305,13 @@ void Watchy7SEG::drawWeather(bool darkMode){
     
     display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
 
+    if (!weather.external) {
+      return;
+    }
+    
     display.setFont(&Seven_Segment10pt7b);
     display.setCursor(165, 150);
-    display.println(shownWeatherProvider == WeatherProvider::Yandex ? "Ya" : "Ow");
+    display.println(weather.provider == WeatherProvider::Yandex ? "Ya" : "Ow");
 }
 
 void Watchy7SEG::drawDebugError(bool darkMode) {
