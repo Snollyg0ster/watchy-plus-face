@@ -5,6 +5,7 @@ RTC_DATA_ATTR weatherData weather;
 RTC_DATA_ATTR WeatherProvider shownWeatherProvider;
 RTC_DATA_ATTR tmElements_t lastWeatherCheck;
 RTC_DATA_ATTR bool wasWeatherChecked = false;
+RTC_DATA_ATTR String debugError;
 
 const uint8_t BATTERY_SEGMENTS_WIDTH = 27;
 const uint8_t BATTERY_SEGMENT_WIDTH = 2;
@@ -36,6 +37,7 @@ void Watchy7SEG::drawWatchFace() {
     drawSteps(darkMode);
     drawWeather(darkMode);
     drawBattery(darkMode);
+    drawDebugError(darkMode);
     display.drawBitmap(116, 75, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     if(BLE_CONFIGURED){
         display.drawBitmap(100, 73, bluetooth, 13, 21, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
@@ -147,8 +149,7 @@ weatherData Watchy7SEG::getOpenWeather(String cityID, String lat, String lon, St
     JSONVar responseObject     = JSON.parse(payload);
     weather.temperature = int(responseObject["main"]["temp"]);
     weather.weatherConditionCode = int(responseObject["weather"][0]["id"]);
-    weather.weatherDescription =
-    JSONVar::stringify(responseObject["weather"][0]["main"]);
+    weather.weatherDescription = JSONVar::stringify(responseObject["weather"][0]["main"]);
     weather.external = true;
     breakTime((time_t)(int)responseObject["sys"]["sunrise"], weather.sunrise);
     breakTime((time_t)(int)responseObject["sys"]["sunset"], weather.sunset);
@@ -177,7 +178,11 @@ weatherData Watchy7SEG::getYandexWeather(String url, String apiKey, String lat, 
     weather.weatherConditionCode = 800;
     weather.external = true;
   } else {
-    throw 1;
+    weather.temperature          = 20;
+    weather.weatherConditionCode = 800;
+    weather.external             = false;
+
+    debugError = String(httpResponseCode) + http.getString();
   }
 
   http.end();
@@ -288,6 +293,22 @@ void Watchy7SEG::drawWeather(bool darkMode){
     display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
 
     display.setFont(&Seven_Segment10pt7b);
-    display.setCursor(138, 180);
+    display.setCursor(100, 180);
     display.println(shownWeatherProvider == WeatherProvider::Yandex ? "Yandex" : "OpenWe");
+}
+
+void Watchy7SEG::drawDebugError(bool darkMode) {
+  if (!debugError) {
+    return;
+  }
+
+  int x1 = 0, y1 = 40;
+  int16_t  x, y;
+  uint16_t w, h;
+
+  display.setFont(&Seven_Segment10pt7b);
+  display.setCursor(x1, y1);
+  display.getTextBounds(String(debugError), x1, y1, &x, &y, &w, &h);
+  display.fillRect(x1, y1 - h, w, h, darkMode ? GxEPD_BLACK : GxEPD_WHITE);
+  display.println(debugError);
 }

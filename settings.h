@@ -29,7 +29,7 @@
 
 // Yandex Weather settings
 
-#define YANDEX_WEATHER_URL "https://api.weather.yandex.ru/v2/forecast?lat={lat}&lon={lon}"
+#define YANDEX_WEATHER_URL "http://api.weather.yandex.ru/v2/forecast?lat={lat}&lon={lon}"
 #define YANDEX_WEATHER_API_KEY "16d58385-254a-46b2-80d2-725eddac83ec"
 #define YANDEX_LAT "55.008354" //Novosibirsk, Looked up on https://www.latlong.net/
 #define YANDEX_LON "82.935730"
