@@ -282,7 +282,7 @@ void Watchy7SEG::drawWeather(bool darkMode){
     display.drawBitmap(165, 110, weather.isMetric ? celsius : fahrenheit, 26, 20, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     const unsigned char* weatherIcon;
 
-    if(WIFI_CONFIGURED){
+    if(WIFI_CONFIGURED && weather.external){
       //https://openweathermap.org/weather-conditions
       if(weatherConditionCode > 801){//Cloudy
         weatherIcon = cloudy;
