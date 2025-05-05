@@ -12,6 +12,7 @@ const uint8_t BATTERY_SEGMENT_HEIGHT = 11;
 const uint8_t BATTERY_SEGMENT_SPACING = 3;
 const uint8_t WEATHER_ICON_WIDTH = 48;
 const uint8_t WEATHER_ICON_HEIGHT = 32;
+const uint8_t WEATHER_PROVIDER_ICON_SIZE = 15;
 const float APPROXIMATE_MAXIMUM_VOLTAGE = 4.245;
 const float APPROXIMATE_MINIMUM_VOLTAGE = 2.8;
 
@@ -312,9 +313,7 @@ void Watchy7SEG::drawWeather(bool darkMode){
       return;
     }
     
-    display.setFont(&Seven_Segment10pt7b);
-    display.setCursor(165, 150);
-    display.println(weather.provider == WeatherProvider::Yandex ? "Ya" : "Ow");
+    display.drawBitmap(175, 140, weather.provider == WeatherProvider::Yandex  ? yandexIcon : openWeatherIcon, WEATHER_PROVIDER_ICON_SIZE, WEATHER_PROVIDER_ICON_SIZE, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
 }
 
 void Watchy7SEG::drawDebugError(bool darkMode) {
