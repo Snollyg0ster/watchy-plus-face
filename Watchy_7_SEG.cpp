@@ -6,7 +6,7 @@ RTC_DATA_ATTR tmElements_t lastWeatherCheck;
 RTC_DATA_ATTR bool wasWeatherChecked = false;
 RTC_DATA_ATTR String debugError;
 
-const uint8_t BATTERY_SEGMENTS_WIDTH = 27;
+const uint8_t BATTERY_SEGMENTS_WIDTH = 30;
 const uint8_t BATTERY_SEGMENT_WIDTH = 2;
 const uint8_t BATTERY_SEGMENT_HEIGHT = 11;
 const uint8_t BATTERY_SEGMENT_SPACING = 3;
@@ -107,8 +107,8 @@ void Watchy7SEG::drawSteps(bool darkMode){
     display.println(stepCount);
 }
 void Watchy7SEG::drawBattery(bool darkMode){
-    display.drawBitmap(158, 73, battery, 37, 21, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
-    display.fillRect(163, 78, BATTERY_SEGMENTS_WIDTH, BATTERY_SEGMENT_HEIGHT, darkMode ? GxEPD_BLACK : GxEPD_WHITE);//clear battery segments
+    display.drawBitmap(155, 73, battery, 40, 21, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
+    display.fillRect(160, 78, BATTERY_SEGMENTS_WIDTH, BATTERY_SEGMENT_HEIGHT, darkMode ? GxEPD_BLACK : GxEPD_WHITE);//clear battery segments
     float VBAT = getBatteryVoltage();
     float maxVoltageDelta = APPROXIMATE_MAXIMUM_VOLTAGE - APPROXIMATE_MINIMUM_VOLTAGE;
     float voltageDelta = maxVoltageDelta - (APPROXIMATE_MAXIMUM_VOLTAGE - VBAT);
@@ -122,7 +122,7 @@ void Watchy7SEG::drawBattery(bool darkMode){
     int8_t segmentsAmount = batteryPercent * maxSegmentsAmount;
 
     for(int8_t batterySegment = 0; batterySegment < segmentsAmount; batterySegment++){
-        display.fillRect(163 + (batterySegment * BATTERY_SEGMENT_SPACING), 78, BATTERY_SEGMENT_WIDTH, BATTERY_SEGMENT_HEIGHT, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
+        display.fillRect(160 + (batterySegment * BATTERY_SEGMENT_SPACING), 78, BATTERY_SEGMENT_WIDTH, BATTERY_SEGMENT_HEIGHT, darkMode ? GxEPD_WHITE : GxEPD_BLACK);
     }
 }
 
