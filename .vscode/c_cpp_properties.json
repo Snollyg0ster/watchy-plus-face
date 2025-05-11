@@ -3,11 +3,11 @@
     {
       "name": "Win32",
       "includePath": [
-        "${workspaceFolder}/**",
-        "C:/Users/26347/AppData/Local/Arduino15/packages/esp32/hardware/**",
-        "C:/Users/26347/OneDrive/Documents/Arduino/libraries/**"
+        "C:\\Users\\26347\\AppData\\Local\\Arduino15\\packages\\arduino\\**",
+        "C:\\Users\\26347\\AppData\\Local\\Arduino15\\packages\\esp32\\**",
+        "C:\\Users\\26347\\OneDrive\\Documents\\Arduino\\libraries\\**"
       ],
-      "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
+      "defines": ["_DEBUG", "UNICODE", "_UNICODE", "ARDUINO=10813"],
       "windowsSdkVersion": "10.0.22621.0",
       "compilerPath": "cl.exe",
       "cStandard": "c17",

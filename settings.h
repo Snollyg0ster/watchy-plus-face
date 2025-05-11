@@ -1,4 +1,4 @@
-#include "Watchy_7_SEG.h"
+#include "watchy-plus-face.h"
 
 #ifndef SETTINGS_H
 #define SETTINGS_H

@@ -1,4 +1,4 @@
-#include "Watchy_7_SEG.h"
+#include "watchy-plus-face.h"
 
 RTC_DATA_ATTR bool darkMode = true;
 RTC_DATA_ATTR weatherInfo weather;

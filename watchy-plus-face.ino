@@ -1,4 +1,4 @@
-#include "Watchy_7_SEG.h"
+#include "watchy-plus-face.h"
 #include "settings.h"
 
 void setup(){
